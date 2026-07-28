@@ -33,7 +33,7 @@ jobs:
       - name: Build APK
         run: |
           flutter pub get
-          flutter build apk --debug --no-daemon
+          flutter build apk --debug
       
       - uses: actions/upload-artifact@v4
         with:
