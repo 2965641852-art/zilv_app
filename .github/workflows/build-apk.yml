@@ -14,22 +14,26 @@ jobs:
       
       - name: Install Flutter
         run: |
-          git clone --depth 1 -b stable https://github.com/flutter/flutter.git /opt/flutter
+          cd /opt
+          git clone --depth 1 -b stable https://github.com/flutter/flutter.git
           echo "/opt/flutter/bin" >> $GITHUB_PATH
       
-      - name: Flutter doctor
-        run: flutter doctor
-      
-      - name: Accept licenses
+      - name: Accept licenses (auto)
         run: |
-          flutter doctor --android-licenses || true
-          yes | flutter doctor --android-licenses || true
-          echo "y" | flutter doctor --android-licenses || true
+          flutter doctor --android-licenses 2>&1 &
+          sleep 10
+          while pgrep -f "flutter" > /dev/null; do pkill -f "flutter" 2>/dev/null || true; done
+          # 手动创建许可证文件
+          mkdir -p $HOME/.android
+          echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $HOME/.android/repositories.cfg
+          yes | $ANDROID_HOME/tools/bin/sdkmanager --licenses 2>/dev/null || true
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses 2>/dev/null || true
+          echo "Licenses accepted"
       
       - name: Build APK
         run: |
           flutter pub get
-          flutter build apk --debug
+          flutter build apk --debug --no-daemon
       
       - uses: actions/upload-artifact@v4
         with:
